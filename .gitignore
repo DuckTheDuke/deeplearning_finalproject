@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Data and experiment outputs (re-downloadable / regenerated)
+data/
+*.parquet
+mlruns/
+mlartifacts/
+checkpoints/
