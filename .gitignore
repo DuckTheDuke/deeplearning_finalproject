@@ -7,6 +7,7 @@ __pycache__/
 # Data and experiment outputs (re-downloadable / regenerated)
 data/
 *.parquet
+hakwiki.txt
 mlruns/
 mlartifacts/
 checkpoints/

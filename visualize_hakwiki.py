@@ -47,10 +47,22 @@ def base_of(token_nfd):
     return unicodedata.normalize("NFC", "".join(ch for ch in token_nfd if ch not in TONE_MARKS)).lower()
 
 
+# Pha̍k-fa-sṳ letters: no b, d, j, q, r, w, x, z, and g only in "ng". Tone marks sit on a vowel or a syllabic m/n.
+HAKKA_LETTERS = re.compile(r"(?:ng|[acefhiklmnopstuvy̤])+")
+TONE_CARRIERS = set("aeioumn")
+
+
 def looks_hakka(token_nfd):
-    # Rough filter: real Hakka syllables are short and fully lowercase; foreign names usually aren't.
-    plain = "".join(ch for ch in token_nfd if ch.isalpha())
-    return 1 <= len(plain) <= 6 and token_nfd == token_nfd.lower()
+    """Rough shape filter for one syllable; foreign names usually break one of these rules."""
+    tok = token_nfd.lower()  # casing says nothing: sentence starts and place names are capitalized
+    marks = [i for i, ch in enumerate(tok) if ch in TONE_MARKS]
+    base = "".join(ch for ch in tok if ch not in TONE_MARKS)
+    if not 1 <= len(base.replace("̤", "")) <= 6 or not HAKKA_LETTERS.fullmatch(base):
+        return False
+    if len(marks) > 1:  # Frédéric, Pyrénées, Cầu
+        return False
+    carrier = tok[:marks[0]].replace("̤", "")[-1:] if marks else ""  # ṳ́ is u, U+0324, then the tone
+    return not marks or carrier in TONE_CARRIERS
 
 
 def finish(fig, out_dir, name):
@@ -131,7 +143,7 @@ def plot_article_lengths(syllables_per_article, out_dir):
     ax.set_xscale("log")
     med = np.median(s)
     ax.axvline(med, color=INK_2, linewidth=1)
-    ax.text(med * 1.08, ax.get_ylim()[1] * 0.92, f"median {med:.0f}", color=INK_2, fontsize=9)
+    ax.text(med * 0.94, ax.get_ylim()[1] * 0.92, f"median {med:.0f}", color=INK_2, fontsize=9, ha="right")
     ax.grid(axis="x", visible=False)
     ax.set_xlabel("Hakka syllable tokens per article (log scale)")
     ax.set_ylabel("articles")
