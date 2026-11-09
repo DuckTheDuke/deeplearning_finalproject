@@ -10,3 +10,6 @@ data/
 mlruns/
 mlartifacts/
 checkpoints/
+
+# macOS
+.DS_Store
