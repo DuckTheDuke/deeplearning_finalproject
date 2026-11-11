@@ -9,6 +9,7 @@ data/
 *.parquet
 hakwiki.txt
 mlruns/
+mlflow.db
 mlartifacts/
 checkpoints/
 
