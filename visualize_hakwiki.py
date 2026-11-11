@@ -13,6 +13,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+from hakka_tones.data import looks_hakka
+
 # Pha̍k-fa-sṳ tone marks (combining characters after NFD). U+0324 (the dots under ṳ) is NOT a tone.
 TONES = [  # (combining mark, label); order fixes each tone's color
     ("̂", "â  circumflex · 陰平"),
@@ -21,7 +23,7 @@ TONES = [  # (combining mark, label); order fixes each tone's color
     ("̍", "a̍  vertical line · 陽入"),
     (None, "a  no mark · 去聲 / 陰入"),
 ]
-TONE_MARKS = {mark for mark, _ in TONES if mark}
+TONE_MARKS = {mark for mark, _ in TONES if mark}  # same four marks as hakka_tones.data
 
 # Reference data-viz palette, light mode: categorical slots 1-5 in fixed order.
 SERIES = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4"]
@@ -46,23 +48,6 @@ def base_of(token_nfd):
     """Toneless, lowercased syllable — the model's input form. Keeps ṳ."""
     return unicodedata.normalize("NFC", "".join(ch for ch in token_nfd if ch not in TONE_MARKS)).lower()
 
-
-# Pha̍k-fa-sṳ letters: no b, d, j, q, r, w, x, z, and g only in "ng". Tone marks sit on a vowel or a syllabic m/n.
-HAKKA_LETTERS = re.compile(r"(?:ng|[acefhiklmnopstuvy̤])+")
-TONE_CARRIERS = set("aeioumn")
-
-
-def looks_hakka(token_nfd):
-    """Rough shape filter for one syllable; foreign names usually break one of these rules."""
-    tok = token_nfd.lower()  # casing says nothing: sentence starts and place names are capitalized
-    marks = [i for i, ch in enumerate(tok) if ch in TONE_MARKS]
-    base = "".join(ch for ch in tok if ch not in TONE_MARKS)
-    if not 1 <= len(base.replace("̤", "")) <= 6 or not HAKKA_LETTERS.fullmatch(base):
-        return False
-    if len(marks) > 1:  # Frédéric, Pyrénées, Cầu
-        return False
-    carrier = tok[:marks[0]].replace("̤", "")[-1:] if marks else ""  # ṳ́ is u, U+0324, then the tone
-    return not marks or carrier in TONE_CARRIERS
 
 
 def finish(fig, out_dir, name):
